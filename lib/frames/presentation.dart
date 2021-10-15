@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+//import para los componentes importados de la biblioteca componentes
 import 'package:proyecto_final/components/colors.dart';
 import 'package:proyecto_final/components/largeRectangularButton.dart';
+//import para controlar la orientacion del frame
+import 'package:flutter/services.dart';
+import 'package:proyecto_final/frames/login.dart';
 
 class Presentation extends StatefulWidget {
   Presentation({Key? key}) : super(key: key);
@@ -10,6 +14,16 @@ class Presentation extends StatefulWidget {
 }
 
 class _PresentationState extends State<Presentation> {
+
+  @override
+  void initState(){//se controla la orientacion del frame para bloquearla verticalmente
+    super.initState();
+    SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
 
@@ -47,7 +61,7 @@ class _PresentationState extends State<Presentation> {
           image: DecorationImage(
             fit: BoxFit.cover,
             image: AssetImage(
-              "assets/images/fondo1.png"
+              "assets/images/Fondo.png"
             )
           )
         ),
@@ -81,8 +95,16 @@ class _PresentationState extends State<Presentation> {
       child: LargeRectangularButton(
         backgroundColor: AppColor.green, 
         textColor: AppColor.fonts, 
-        text: "start"
+        text: "start",
+        onTap: onPressed
       )
+    );
+  }
+
+  onPressed(){
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => Login()),
     );
   }
 }
