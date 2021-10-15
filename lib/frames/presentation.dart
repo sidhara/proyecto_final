@@ -47,8 +47,8 @@ class _PresentationState extends State<Presentation> {
       child: Stack(
         children: [
           mainBackground(),
-          logo(),
-          startButton()
+          logo(150),
+          startButton(20)
         ],
       ),
     );
@@ -69,10 +69,10 @@ class _PresentationState extends State<Presentation> {
     );
   }
   
-  logo(){
+  logo(double distanceFromTop){
     return Positioned(
       left: MediaQuery.of(context).size.width/6,
-      top: 150,
+      top: distanceFromTop,
       child: Container(
         //alignment: Alignment.center,
         height: 300,
@@ -89,9 +89,9 @@ class _PresentationState extends State<Presentation> {
     );
   }
 
-  startButton(){
+  startButton(double distanceFromBottom){
     return Positioned(
-      bottom: 20,
+      bottom: distanceFromBottom,
       child: LargeRectangularButton(
         backgroundColor: AppColor.green, 
         textColor: AppColor.fonts, 

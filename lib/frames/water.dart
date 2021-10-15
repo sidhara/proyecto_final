@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 //import para controlar la orientacion del frame
 import 'package:flutter/services.dart';
 //import para los componentes importados de la biblioteca componentes
+import 'package:proyecto_final/components/backButton.dart';
 import 'package:proyecto_final/components/colors.dart';
-import 'package:proyecto_final/components/largeRectangularButton.dart';
-import 'package:proyecto_final/components/textField.dart';
-import 'package:proyecto_final/frames/control.dart';
+import 'package:proyecto_final/components/largeCircularButton.dart';
 
-class Login extends StatefulWidget {
-  Login({Key? key}) : super(key: key);
+class Water extends StatefulWidget {
+  Water({Key? key}) : super(key: key);
 
   @override
-  _LoginState createState() => _LoginState();
+  _WaterState createState() => _WaterState();
 }
 
-class _LoginState extends State<Login> {
+class _WaterState extends State<Water> {
 
   @override
   void initState(){//se controla la orientacion del frame para bloquearla verticalmente
@@ -27,7 +26,6 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-
     double heigth=MediaQuery.of(context).size.height;
     
     return Scaffold(
@@ -35,7 +33,7 @@ class _LoginState extends State<Login> {
         height: heigth,
         child: Stack(
           children: [
-            layout(),
+            layout()
           ]
         )
       )
@@ -47,11 +45,11 @@ class _LoginState extends State<Login> {
       child: Stack(
         children: [
           mainBackground(),
-          text('Welcome'),
-          logo(),
-          tray(370),
-          loginInputs(390),
-          loginButton(20)
+          text('Water'),
+          tray(300),
+          waterIcon(320),
+          waterButton(20),
+          goBackButton(20)
         ],
       ),
     );
@@ -89,26 +87,6 @@ class _LoginState extends State<Login> {
     );
   }
 
-  logo(){
-    return Positioned(
-      left: MediaQuery.of(context).size.width/6,
-      top: 100,
-      child: Container(
-        //alignment: Alignment.center,
-        height: 300,
-        width: 300,
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            scale: 0.8,
-            image: AssetImage(
-              "assets/images/Logo.png"
-            )
-          )
-        ),
-      )
-    );
-  }
-
   tray(double distanceFromTop){
     return Positioned(
       top: distanceFromTop,
@@ -128,53 +106,60 @@ class _LoginState extends State<Login> {
     );
   }
 
-  TextEditingController emailTextController = TextEditingController();
-  TextEditingController passwordTextController = TextEditingController();
-
-  loginInputs(double distanceFromTop){
-    double extension=MediaQuery.of(context).size.width-60;
+  waterIcon(double distanceFromTop){
     return Positioned(
+      left: MediaQuery.of(context).size.width/6,
       top: distanceFromTop,
-      width: extension,
-      left: (MediaQuery.of(context).size.width-extension)/2,
-      child: Column(
-        children: [
-          TextFieldCustom(//textfield para email
-            text: 'E-mail', 
-            controller: emailTextController, 
-            password: false),
-          const SizedBox(//espaciado entre textfields
-            height: 20,
-          ),
-          TextFieldCustom(//textfield para contraseñas
-            password: true,
-            controller: passwordTextController,
-            text: 'Password',
+      child: Container(
+        //alignment: Alignment.center,
+        height: 300,
+        width: 300,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            scale: 0.8,
+            image: AssetImage(
+              "assets/images/Rain.png"
+            )
           )
-        ],
+        ),
       )
     );
   }
 
-  loginButton(double distanceFromTop){
+  waterButton(double distanceFromBottom){
     return Positioned(
-      bottom: distanceFromTop,
-      child: LargeRectangularButton(
-        backgroundColor: Colors.white, 
+      bottom: distanceFromBottom,
+      child: LargeCircularButton(
+        backgroundColor: AppColor.blue, 
         textColor: AppColor.fonts, 
-        text: "login",
-        onTap: () => onPressed()
+        text: "Irrigate",
+        onTap: () => onPressed(0)
       )
     );
+  }  
+
+  goBackButton(double distanceFromBottom){
+    return Positioned(
+      bottom: distanceFromBottom,
+      child: BackButtonCustom(
+        backgroundColor: Colors.white, 
+        onTap: () => onPressed(1)
+      )
+    );
+  }  
+
+  onPressed(int type){
+    if(type==0){
+      irrigate();
+    }else{
+      Navigator.pop(context);
+    }
   }
 
-  onPressed(){
-    String email=emailTextController.text,
-    password=passwordTextController.text;
+  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Control()),
-    );    
+  irrigate(){
+    //code here
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 }
