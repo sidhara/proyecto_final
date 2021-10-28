@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 //import para controlar la orientacion del frame
 import 'package:flutter/services.dart';
 //import para los componentes importados de la biblioteca componentes
-import 'package:proyecto_final/components/backButton.dart';
+import 'package:proyecto_final/components/smallCircularButton.dart';
 
 class Temperature extends StatefulWidget {
-  Temperature({Key? key}) : super(key: key);
+  const Temperature({Key? key}) : super(key: key);
 
   @override
   _TemperatureState createState() => _TemperatureState();
@@ -67,9 +67,10 @@ class _TemperatureState extends State<Temperature> {
   goBackButton(double distanceFromBottom){
     return Positioned(
       bottom: distanceFromBottom,
-      child: BackButtonCustom(
+      child: SmallCircularButtonCustom(
         backgroundColor: Colors.white, 
-        onTap: () => onPressed()
+        onTap: () => onPressed(),
+        type: 'go_back',
       )
     );
   }  

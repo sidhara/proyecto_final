@@ -5,7 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:proyecto_final/components/colors.dart';
 import 'package:proyecto_final/components/largeCircularButton.dart';
 import 'package:proyecto_final/components/largeRectangularButton.dart';
-import 'package:proyecto_final/components/backButton.dart';
+import 'package:proyecto_final/components/smallCircularButton.dart';
+//import para la navegacion entre frames
 import 'package:proyecto_final/frames/humidity.dart';
 import 'package:proyecto_final/frames/ph.dart';
 import 'package:proyecto_final/frames/temperature.dart';
@@ -21,9 +22,9 @@ class Control extends StatefulWidget {
 class _ControlState extends State<Control> {
 
   @override
-  void initState(){//se controla la orientacion del frame para bloquearla verticalmente
+  void initState(){
     super.initState();
-    SystemChrome.setPreferredOrientations([
+    SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
     ]);
@@ -46,19 +47,16 @@ class _ControlState extends State<Control> {
   }
 
   layout(){
-    return Container(
-      child: Stack(
-        children: [
-          mainBackground(),
-          text('Control'),
-          tray(300),
-          humidityButton(320),
-          phButton(400),
-          temperatureButton(480),
-          waterButton(20),
-          goBackButton(20)
-        ],
-      ),
+    return Stack(
+      children: [
+        mainBackground(),
+        text('Control'),
+        tray(300),
+        humidityButton(320),
+        phButton(400),
+        temperatureButton(480),
+        waterButton(20),
+      ],
     );
   }
 
@@ -164,33 +162,34 @@ class _ControlState extends State<Control> {
   goBackButton(double distanceFromBottom){
     return Positioned(
       bottom: distanceFromBottom,
-      child: BackButtonCustom(
+      child: SmallCircularButtonCustom(
         backgroundColor: Colors.white, 
-        onTap: () => onPressed(4)
+        onTap: () => onPressed(4),
+        type: 'go_back',
       )
     );
   }  
 
-  onPressed(int type){
+  onPressed(int type){//se maneja la navegacion a cada uno de los frames siguientes
     if(type==0){
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Humidity()),
+        MaterialPageRoute(builder: (context) => const Humidity()),
       );    
     }else if(type==1){
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Ph()),
+        MaterialPageRoute(builder: (context) => const Ph()),
       );    
     }else if(type==2){
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Temperature()),
+        MaterialPageRoute(builder: (context) => const Temperature()),
       );    
     }else if(type==3){
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Water()),
+        MaterialPageRoute(builder: (context) => const Water()),
       );    
     }else{
       Navigator.pop(context);

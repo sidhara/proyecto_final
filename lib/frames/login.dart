@@ -5,10 +5,14 @@ import 'package:flutter/services.dart';
 import 'package:proyecto_final/components/colors.dart';
 import 'package:proyecto_final/components/largeRectangularButton.dart';
 import 'package:proyecto_final/components/textField.dart';
+//import para la conexion al sql
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+//import para la navegacion entre frames
 import 'package:proyecto_final/frames/control.dart';
 
 class Login extends StatefulWidget {
-  Login({Key? key}) : super(key: key);
+  const Login({Key? key}) : super(key: key);
 
   @override
   _LoginState createState() => _LoginState();
@@ -16,13 +20,16 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
 
+  String url='http://3.220.8.74/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | http://3.220.8.74/getLogin.php
+
   @override
-  void initState(){//se controla la orientacion del frame para bloquearla verticalmente
+  void initState(){
     super.initState();
-    SystemChrome.setPreferredOrientations([
+    SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
     ]);
+    getData(url);//se obtienen los datos inicialmente y se cargan las estructuras de datos y validaciones
   }
 
   @override
@@ -31,6 +38,7 @@ class _LoginState extends State<Login> {
     double heigth=MediaQuery.of(context).size.height;
     
     return Scaffold(
+      // ignore: sized_box_for_whitespace
       body: Container(
         height: heigth,
         child: Stack(
@@ -43,17 +51,15 @@ class _LoginState extends State<Login> {
   }
 
   layout(){
-    return Container(
-      child: Stack(
-        children: [
-          mainBackground(),
-          text('Welcome'),
-          logo(),
-          tray(370),
-          loginInputs(390),
-          loginButton(20)
-        ],
-      ),
+    return Stack(
+      children: [
+        mainBackground(),
+        text('Welcome'),
+        logo(),
+        tray(370),
+        loginInputs(390),
+        loginButton(20)
+      ],
     );
   }
 
@@ -119,7 +125,7 @@ class _LoginState extends State<Login> {
         decoration: 
           BoxDecoration(
             color: AppColor.green,
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topRight: Radius.circular(30),
               topLeft:  Radius.circular(30)
             ) 
@@ -156,9 +162,9 @@ class _LoginState extends State<Login> {
     );
   }
 
-  loginButton(double distanceFromTop){
+  loginButton(double distanceFromBottom){
     return Positioned(
-      bottom: distanceFromTop,
+      bottom: distanceFromBottom,
       child: LargeRectangularButton(
         backgroundColor: Colors.white, 
         textColor: AppColor.fonts, 
@@ -169,12 +175,61 @@ class _LoginState extends State<Login> {
   }
 
   onPressed(){
+      if(validation()){
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => Control()),
+          (route) => false
+        );    
+      }
+  }
+
+  late List<LoginCredential>loginCredentials;
+  final snackBar = const SnackBar(content: Text('Error, the credential does not exist!'));//muestra un mensaje en la pantalla del dispositivo
+
+  bool validation(){
     String email=emailTextController.text,
     password=passwordTextController.text;
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => Control()),
-    );    
+    for(LoginCredential credential in loginCredentials){
+      if(email==credential.email){
+        if(password==credential.password){
+          return true;
+        }
+      }
+    }
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
+    return false;
   }
+
+  Future getData(String url) async {//funcion para recibir la informacion del servidor sobre los logins, la formatea y la guarda en estructuras de datos necesarias
+    loginCredentials=<LoginCredential>[];
+
+    Uri uri=Uri.parse(url);
+    http.Response response=await http.get(uri);
+      if(response.body.isNotEmpty){
+        if(response.statusCode==200){
+          List credentials=json.decode(response.body);//{id: 1, email: example@gmail.com, password: example}
+          List<Text> credentialInfo;
+          for(dynamic crendential in credentials){
+            credentialInfo=crendential.toString().split(', ').map((String text) => Text(text)).toList();
+            loginCredentials.add(
+              LoginCredential(
+                int.parse(credentialInfo[0].data!.substring(5)), 
+                credentialInfo[1].data!.substring(7), 
+                credentialInfo[2].data!.substring(10,credentialInfo[2].data!.length-1)
+              )
+            );
+          }
+        }
+      }
+  }
+}
+
+class LoginCredential{
+  late int id;
+  late String email;
+  late String password;
+
+  LoginCredential(this.id,this.email,this.password);
 }

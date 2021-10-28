@@ -4,10 +4,11 @@ import 'package:proyecto_final/components/colors.dart';
 import 'package:proyecto_final/components/largeRectangularButton.dart';
 //import para controlar la orientacion del frame
 import 'package:flutter/services.dart';
+//import para la navegacion entre frames
 import 'package:proyecto_final/frames/login.dart';
 
 class Presentation extends StatefulWidget {
-  Presentation({Key? key}) : super(key: key);
+  const Presentation({Key? key}) : super(key: key);
 
   @override
   _PresentationState createState() => _PresentationState();
@@ -16,9 +17,9 @@ class Presentation extends StatefulWidget {
 class _PresentationState extends State<Presentation> {
 
   @override
-  void initState(){//se controla la orientacion del frame para bloquearla verticalmente
+  void initState(){
     super.initState();
-    SystemChrome.setPreferredOrientations([
+    SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
     ]);
@@ -27,10 +28,10 @@ class _PresentationState extends State<Presentation> {
   @override
   Widget build(BuildContext context) {
 
-    double heigth=MediaQuery.of(context).size.height;
-    double width=MediaQuery.of(context).size.width;
+    double heigth=MediaQuery.of(context).size.height;//MediaQuery.of(context).size.width es el alto de la pantalla del dispositivo
     
     return Scaffold(
+      // ignore: sized_box_for_whitespace
       body: Container(
         height: heigth,
         child: Stack(
@@ -43,14 +44,12 @@ class _PresentationState extends State<Presentation> {
   }
 
   layout(){
-    return Container(
-      child: Stack(
-        children: [
-          mainBackground(),
-          logo(150),
-          startButton(20)
-        ],
-      ),
+    return Stack(
+      children: [
+        mainBackground(),
+        logo(150),
+        startButton(20)
+      ],
     );
   }
 
@@ -71,10 +70,9 @@ class _PresentationState extends State<Presentation> {
   
   logo(double distanceFromTop){
     return Positioned(
-      left: MediaQuery.of(context).size.width/6,
+      left: MediaQuery.of(context).size.width/6,//MediaQuery.of(context).size.width es el ancho de la pantalla del dispositivo 
       top: distanceFromTop,
       child: Container(
-        //alignment: Alignment.center,
         height: 300,
         width: 300,
         decoration: const BoxDecoration(
@@ -102,9 +100,9 @@ class _PresentationState extends State<Presentation> {
   }
 
   onPressed(){
-    Navigator.push(
+    Navigator.push(//navega al siguente frame
       context,
-      MaterialPageRoute(builder: (context) => Login()),
+      MaterialPageRoute(builder: (context) => const Login()),
     );
   }
 }

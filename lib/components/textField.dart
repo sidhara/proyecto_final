@@ -1,19 +1,19 @@
-// ignore_for_file: file_names
+// ignore_for_file: file_names, must_be_immutable
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TextFieldCustom extends StatelessWidget {
   final String text;
-  final bool password;
+  bool password;
   final TextEditingController controller;
-  const TextFieldCustom({Key? key, required this.text, required this.controller, required this.password}) : super(key: key);
+  TextFieldCustom({Key? key, required this.text, required this.controller, required this.password}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     if(password){
       return TextFormField(
-        obscureText: true,
+        obscureText: password,
         obscuringCharacter: "*",
         controller: controller,
         decoration: InputDecoration(
@@ -40,6 +40,5 @@ class TextFieldCustom extends StatelessWidget {
         ),
       );
     }
-
   }
 }

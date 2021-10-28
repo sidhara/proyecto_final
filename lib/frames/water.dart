@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 //import para controlar la orientacion del frame
 import 'package:flutter/services.dart';
 //import para los componentes importados de la biblioteca componentes
-import 'package:proyecto_final/components/backButton.dart';
+import 'package:proyecto_final/components/smallCircularButton.dart';
 import 'package:proyecto_final/components/colors.dart';
 import 'package:proyecto_final/components/largeCircularButton.dart';
 
 class Water extends StatefulWidget {
-  Water({Key? key}) : super(key: key);
+  const Water({Key? key}) : super(key: key);
 
   @override
   _WaterState createState() => _WaterState();
@@ -16,9 +16,9 @@ class Water extends StatefulWidget {
 class _WaterState extends State<Water> {
 
   @override
-  void initState(){//se controla la orientacion del frame para bloquearla verticalmente
+  void initState(){
     super.initState();
-    SystemChrome.setPreferredOrientations([
+    SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
     ]);
@@ -141,9 +141,10 @@ class _WaterState extends State<Water> {
   goBackButton(double distanceFromBottom){
     return Positioned(
       bottom: distanceFromBottom,
-      child: BackButtonCustom(
+      child: SmallCircularButtonCustom(
         backgroundColor: Colors.white, 
-        onTap: () => onPressed(1)
+        onTap: () => onPressed(1),
+        type: 'go_back',
       )
     );
   }  
@@ -152,14 +153,14 @@ class _WaterState extends State<Water> {
     if(type==0){
       irrigate();
     }else{
-      Navigator.pop(context);
+      Navigator.pop(context);//se navega al frame anterior
     }
   }
 
-  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));
+  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
 
   irrigate(){
-    //code here
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    //code para downlink de riego
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
   }
 }
