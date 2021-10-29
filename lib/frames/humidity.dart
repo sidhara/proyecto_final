@@ -9,6 +9,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 //import para la grafica
 import 'package:charts_flutter/flutter.dart' as charts;
+//import para el analisis
+import 'dart:math';
+import 'package:calculess/calculess.dart';
 
 class Humidity extends StatefulWidget {
   const Humidity({Key? key}) : super(key: key);
@@ -19,7 +22,7 @@ class Humidity extends StatefulWidget {
 
 class _HumidityState extends State<Humidity> {
 
-  String url='http://3.220.8.74/getHumidity.php';//url del servicio que continene los datos de la humedad para consumir | https://naturemonitorsoftware.000webhostapp.com/getHumidity.php | http://3.220.8.74/getHumidity.php
+  String url='https://naturemonitorsoftware.000webhostapp.com/getHumidity.php';//url del servicio que continene los datos de la humedad para consumir | https://naturemonitorsoftware.000webhostapp.com/getHumidity.php | http://3.220.8.74/getHumidity.php
 
   @override
   void initState(){
@@ -33,6 +36,7 @@ class _HumidityState extends State<Humidity> {
   
   @override
   void dispose() {
+    // ignore: todo
     // TODO: implement dispose
     SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente al salir del frame actual
         DeviceOrientation.portraitUp,
@@ -132,29 +136,105 @@ class _HumidityState extends State<Humidity> {
     }
   }
   
-  analyse(){
-    double humidityAverage=0,
-      humidityLastFiveSamplesAverage=0;
-    int i=0;
-      
-      for(HumidityData data in humidityData){
-        humidityAverage+=data.humidity;    
-        i++;
-      }
-    humidityAverage=humidityAverage/i;
-    
-    i=0;
-      for(HumiditySerie series in humiditySeries){
-        humidityLastFiveSamplesAverage+=series.humidity;
-        i++;
-      }
-    humidityLastFiveSamplesAverage=humidityLastFiveSamplesAverage/i;
-    
-    List<int>x=<int>[humidityData.length];
-    //condiciones de peligro para la humedad
+  double m=0,b=0;
+  double f(int x){return b+m*x;}
 
+  analyse(){
+
+    //regresion lineal
+    int n=humidityData.length;
     
-    //code para downlink de riego
+    List<int>x=<int>[];
+    List<double>y=<double>[];
+
+    double sumX=0,
+      sumY=0,
+      sumPowX=0,
+      sumXY=0;
+
+    for(HumidityData data in humidityData){
+      x.add(data.id);
+      y.add(data.humidity);
+
+      sumX+=data.id;
+      sumY+=data.humidity;
+      sumPowX+=pow(data.id,2);
+      sumXY+=(data.id*data.humidity);
+    }
+
+    m=(sumXY/n-(sumX/n)*(sumY/n))/(sumPowX/n-pow(sumX/n,2));//pendiente b1
+    b=sumY/n-m*(sumX/n);//intercepto b0
+
+    //'errores' de la ultima medicion
+    double yEstimated=f(humidityData[n-1].id),
+      yReal=humidityData[n-1].humidity,
+      
+      absoluteError=(yReal-yEstimated).abs(),
+      relativeError=(absoluteError/yReal)*100;
+
+    //'error' cuadratico
+    double cuadraticError=0;
+    
+    for(int i=0; i<x.length;i++){
+      cuadraticError+=pow(y[i]-f(x[i]),2);//Mean Squared Error (MSE) funcion de costo
+    }
+
+    cuadraticError=cuadraticError/n;
+    
+    //determinacion de la pendiente de la humedad
+    String humiditySlope;
+    if(m>1) humiditySlope='moistening';
+    if(m<0) {
+      humiditySlope='drying up';
+    } else {
+      humiditySlope='steady';
+    }
+
+    //muestra en pantalla la info sobre el analisis de los datos y toma la decision
+    createAlertDialog(context, sumY/n, relativeError, cuadraticError, yReal, humiditySlope);
+  }
+  
+  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
+
+  createAlertDialog(BuildContext context, double yAverage, double relativeError, double cuadraticError, double latestHumidity, String humiditySlope){
+    return showDialog(
+      context: context,
+      builder: (context){
+        if(humiditySlope=='steady' || humiditySlope=='moistening'){
+          return AlertDialog(
+            title: const Text('Analytics based on linear regression models'),
+            content: Text('Average historical humidity of the crop.............'+yAverage.toStringAsPrecision(3)+'\n'+
+                          'Latest humidity sample.......................................'+latestHumidity.toStringAsPrecision(3)+'\n'+
+                          'Relative error of last sample...............................'+relativeError.toStringAsPrecision(3)+'%'+'\n'+
+                          'Cuadratic error of the model...............................'+cuadraticError.toStringAsPrecision(3)+'\n'+
+                          'Humidity state of the crop...................................'+humiditySlope+'\n'+
+                          'Moistening recomendation..................................not needed'
+            ),
+          );
+        }else{
+          return AlertDialog(
+            title: const Text('Analytics based on linear regression models'),
+            content: Text('Average historical humidity of the crop.............'+yAverage.toStringAsPrecision(3)+'\n'+
+                          'Latest humidity sample.......................................'+latestHumidity.toStringAsPrecision(3)+'\n'+
+                          'Relative error of last sample...............................'+relativeError.toStringAsPrecision(3)+'%'+'\n'+
+                          'Cuadratic error of the model...............................'+cuadraticError.toStringAsPrecision(3)+'\n'+
+                          'Humidity state of the crop...................................'+humiditySlope+'\n'+
+                          'Moistening recomendation..................................IRRIGATE'
+            ),
+            actions: [
+              MaterialButton(
+                child: const Text('Irrigate'),
+                onPressed: (){
+                  //codigo para el downlink de riego
+                  ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
+                  Navigator.of(context).pop();
+                }
+              )
+            ],
+          );
+        }
+      }
+    );
   }
 
   chart(double distanceFromTop){
@@ -226,9 +306,8 @@ class _HumidityState extends State<Humidity> {
         }
         sort();//se ordena la serie de datos
 
-        int n=6;//numero de barras/puntos a mostrar en la grafica
+        int n=5;//numero de barras/puntos a mostrar en la grafica
         for(int i=humidityData.length-n;i<humidityData.length;i++){
-          print(humidityData[i].date.toString());
           humiditySeries.add(
             HumiditySerie(
               date: humidityData[i].date, 

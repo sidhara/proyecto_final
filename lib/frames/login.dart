@@ -20,7 +20,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
 
-  String url='http://3.220.8.74/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | http://3.220.8.74/getLogin.php
+  String url='https://naturemonitorsoftware.000webhostapp.com/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | http://3.220.8.74/getLogin.php
 
   @override
   void initState(){
@@ -56,8 +56,8 @@ class _LoginState extends State<Login> {
         mainBackground(),
         text('Welcome'),
         logo(),
-        tray(370),
-        loginInputs(390),
+        tray(470),
+        loginInputs(300),
         loginButton(20)
       ],
     );
@@ -65,6 +65,7 @@ class _LoginState extends State<Login> {
 
   mainBackground(){
     return Positioned(
+      //top: 1,
       child: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -115,12 +116,12 @@ class _LoginState extends State<Login> {
     );
   }
 
-  tray(double distanceFromTop){
+  tray(double size){
     return Positioned(
-      top: distanceFromTop,
+      bottom: 0,
       child: Container(
         alignment: Alignment.center,
-        height: MediaQuery.of(context).size.height-distanceFromTop,
+        height: size,
         width: MediaQuery.of(context).size.width,
         decoration: 
           BoxDecoration(
@@ -137,10 +138,10 @@ class _LoginState extends State<Login> {
   TextEditingController emailTextController = TextEditingController();
   TextEditingController passwordTextController = TextEditingController();
 
-  loginInputs(double distanceFromTop){
+  loginInputs(double distanceFromBottom){
     double extension=MediaQuery.of(context).size.width-60;
     return Positioned(
-      top: distanceFromTop,
+      bottom: distanceFromBottom,
       width: extension,
       left: (MediaQuery.of(context).size.width-extension)/2,
       child: Column(
