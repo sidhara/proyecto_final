@@ -11,7 +11,8 @@ import 'dart:convert';
 import 'package:charts_flutter/flutter.dart' as charts;
 //import para el analisis
 import 'dart:math';
-import 'package:calculess/calculess.dart';
+//import para la persistencia de datos de configuracion en el sistema
+import 'package:proyecto_final/settings/settings.dart';
 
 class Humidity extends StatefulWidget {
   const Humidity({Key? key}) : super(key: key);
@@ -24,16 +25,28 @@ class _HumidityState extends State<Humidity> {
 
   String url='https://naturemonitorsoftware.000webhostapp.com/getHumidity.php';//url del servicio que continene los datos de la humedad para consumir | https://naturemonitorsoftware.000webhostapp.com/getHumidity.php | http://3.220.8.74/getHumidity.php
 
+  bool darkmode=false;
+
   @override
   void initState(){
     super.initState();
+
     SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla horizontalmente
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
     ]);
+
     getData(url);//se obtienen los datos inicialmente y se cargan las estructuras de datos y charts
+    
+    loadDarkModeSetting();
   }
   
+  loadDarkModeSetting()async{
+    final prefereredSetting=PreferencesService();
+    DarkmodeSetting setting=await prefereredSetting.getDarkmodeSettings();
+    darkmode=setting.darkmode!;    
+  }
+
   @override
   void dispose() {
     // ignore: todo
@@ -77,53 +90,104 @@ class _HumidityState extends State<Humidity> {
   }
 
   mainBackground(){
-    return Positioned(
-      child: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            fit: BoxFit.cover,
-            image: AssetImage(
-              "assets/images/FondoHorizontal.png"
+    if(darkmode){
+      return Positioned(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(
+                "assets/images/FondoHorizontalDark1.png"
+              )
             )
-          )
-        ),
-      )
-    );
+          ),
+        )
+      );
+    }else{
+      return Positioned(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(
+                "assets/images/FondoHorizontal.png"
+              )
+            )
+          ),
+        )
+      );
+    }
   }
 
   goBackButton(double distanceFromBottom){
-    return Positioned(
-      bottom: distanceFromBottom,
-      child: SmallCircularButtonCustom(
-        backgroundColor: Colors.white, 
-        onTap: () => onPressed(0),
-        type: 'go_back',
-      )
-    );
+    if(darkmode){
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: SmallCircularButtonCustom(
+          backgroundColor: AppColor.darkModeGrey, 
+          onTap: () => onPressed(0),
+          type: 'go_back',
+          iconColor: Colors.white,
+        )
+      );
+    }else{
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: SmallCircularButtonCustom(
+          backgroundColor: Colors.white, 
+          onTap: () => onPressed(0),
+          type: 'go_back',
+        )
+      );
+    }
   }  
 
   updateButton(double distanceFromTop){
-    return Positioned(
-      top: distanceFromTop,
-      child: SmallCircularButtonCustom(
-        backgroundColor: AppColor.green, 
-        onTap: () => onPressed(1),
-        type: 'update',
-        iconColor: AppColor.fonts,
-      )
-    );
+    if(darkmode){
+      return Positioned(
+        top: distanceFromTop,
+        child: SmallCircularButtonCustom(
+          backgroundColor: Colors.white, 
+          onTap: () => onPressed(1),
+          type: 'update',
+          iconColor: AppColor.darkModeGrey,
+        )
+      );
+    }else{
+      return Positioned(
+        top: distanceFromTop,
+        child: SmallCircularButtonCustom(
+          backgroundColor: AppColor.green, 
+          onTap: () => onPressed(1),
+          type: 'update',
+          iconColor: AppColor.fonts,
+        )
+      );
+    }
   }  
 
   analyticsButton(double distanceFromTop){
-    return Positioned(
-      top: distanceFromTop,
-      child: SmallCircularButtonCustom(
-        backgroundColor: AppColor.green, 
-        onTap: () => onPressed(2),
-        type: 'humidity_analysis',
-        iconColor: AppColor.fonts,
-      )
-    );
+    if(darkmode){
+      return Positioned(
+        top: distanceFromTop,
+        child: SmallCircularButtonCustom(
+          backgroundColor: Colors.white, 
+          onTap: () => onPressed(2),
+          type: 'humidity_analysis',
+          iconColor: AppColor.darkModeGrey,
+        )
+      );
+    }else{
+      return Positioned(
+        top: distanceFromTop,
+        child: SmallCircularButtonCustom(
+          backgroundColor: AppColor.green, 
+          onTap: () => onPressed(2),
+          type: 'humidity_analysis',
+          iconColor: AppColor.fonts,
+        )
+      );
+    }
   }  
 
   onPressed(int option){
@@ -140,7 +204,6 @@ class _HumidityState extends State<Humidity> {
   double f(int x){return b+m*x;}
 
   analyse(){
-
     //regresion lineal
     int n=humidityData.length;
     
@@ -238,13 +301,13 @@ class _HumidityState extends State<Humidity> {
   }
 
   chart(double distanceFromTop){
-    List<charts.Series<HumiditySerie, String>> series = [
+    List<charts.Series<HumiditySeries, String>> series = [
       charts.Series(
         id: "Humidity",
         data: humiditySeries,
-        domainFn: (HumiditySerie series, _) => series.date.toString().split(" ")[1],
-        measureFn: (HumiditySerie series, _) => series.humidity,
-        colorFn: (HumiditySerie series, _) => series.barColor
+        domainFn: (HumiditySeries series, _) => series.date.toString().split(" ")[1],
+        measureFn: (HumiditySeries series, _) => series.humidity,
+        colorFn: (HumiditySeries series, _) => series.barColor!
       )
     ];
 
@@ -260,29 +323,46 @@ class _HumidityState extends State<Humidity> {
   }
 
   text(double distanceFromBottom, double distanceFromRight, String text){
-    return Positioned(
-      bottom: distanceFromBottom,
-      width: 200,
-      right: distanceFromRight,
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 40,
-          color: AppColor.fonts
-        ),
-      ) 
-    );
+    if(darkmode){
+      return Positioned(
+        bottom: distanceFromBottom,
+        width: 200,
+        right: distanceFromRight,
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 40,
+            color: Colors.white
+          ),
+        ) 
+      );
+    }else{
+      return Positioned(
+        bottom: distanceFromBottom,
+        width: 200,
+        right: distanceFromRight,
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 40,
+            color: AppColor.fonts
+          ),
+        ) 
+      );
+    }
   }
 
   late List<HumidityData> humidityData;
-  late List<HumiditySerie> humiditySeries;
+  late List<HumiditySeries> humiditySeries;
   String latestHumidity='';
 
   Future getData(String url)async{//funcion para recibir la informacion del servidor sobre la humedad, la formatea y la guarda en estructuras de datos necesarias para su display
     humidityData=<HumidityData>[];
-    humiditySeries=<HumiditySerie>[];
+    humiditySeries=<HumiditySeries>[];
     Uri uri=Uri.parse(url);
     http.Response response=await http.get(uri);
     if(response.body.isNotEmpty) {
@@ -306,15 +386,32 @@ class _HumidityState extends State<Humidity> {
         }
         sort();//se ordena la serie de datos
 
+        double avgHumidity=0;
+        for(HumidityData data in humidityData){
+          avgHumidity+=data.humidity;
+        }
+        avgHumidity=avgHumidity/humidityData.length;
+        double thirtyPercent=(avgHumidity/100)*30;
+
         int n=5;//numero de barras/puntos a mostrar en la grafica
         for(int i=humidityData.length-n;i<humidityData.length;i++){
-          humiditySeries.add(
-            HumiditySerie(
-              date: humidityData[i].date, 
-              humidity: humidityData[i].humidity, 
-              barColor: charts.ColorUtil.fromDartColor(AppColor.blue)//color de la grafica
-            )
-          );
+          if(humidityData[i].humidity<=thirtyPercent){
+            humiditySeries.add(
+              HumiditySeries(
+                date: humidityData[i].date, 
+                humidity: humidityData[i].humidity,
+                barColor: charts.ColorUtil.fromDartColor(AppColor.lightRed)
+              )
+            );
+          }else{
+            humiditySeries.add(
+              HumiditySeries(
+                date: humidityData[i].date, 
+                humidity: humidityData[i].humidity,
+                barColor: charts.ColorUtil.fromDartColor(AppColor.blue)
+              )
+            );
+          }
         }
         latestHumidity=humiditySeries[humiditySeries.length-1].humidity.toString();
       }
@@ -351,16 +448,16 @@ class HumidityData{
   HumidityData(this.id,this.humidity,this.date);
 }
 
-class HumiditySerie {
+class HumiditySeries {
   final DateTime date;
   final double humidity;
-  final charts.Color barColor;
+  final charts.Color? barColor;
 
-  HumiditySerie(
+  HumiditySeries(
     {
       required this.date,
       required this.humidity,
-      required this.barColor
+      this.barColor
     }
   );
 }

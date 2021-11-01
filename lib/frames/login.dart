@@ -7,9 +7,13 @@ import 'package:proyecto_final/components/largeRectangularButton.dart';
 import 'package:proyecto_final/components/textField.dart';
 //import para la conexion al sql
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'dart:convert';//tambien se usa para la encriptacion
 //import para la navegacion entre frames
 import 'package:proyecto_final/frames/control.dart';
+//import para la encriptacion usando hash
+import 'package:crypto/crypto.dart';
+//import para la persistencia de datos de configuracion en el sistema
+import 'package:proyecto_final/settings/settings.dart';
 
 class Login extends StatefulWidget {
   const Login({Key? key}) : super(key: key);
@@ -22,14 +26,26 @@ class _LoginState extends State<Login> {
 
   String url='https://naturemonitorsoftware.000webhostapp.com/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | http://3.220.8.74/getLogin.php
 
+  bool darkmode=false;
+
   @override
   void initState(){
     super.initState();
+
     SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
     ]);
+
     getData(url);//se obtienen los datos inicialmente y se cargan las estructuras de datos y validaciones
+    
+    loadDarkModeSetting();
+  }
+
+  loadDarkModeSetting()async{
+    final prefereredSetting=PreferencesService();
+    DarkmodeSetting setting=await prefereredSetting.getDarkmodeSettings();
+    darkmode=setting.darkmode!;    
   }
 
   @override
@@ -64,19 +80,33 @@ class _LoginState extends State<Login> {
   }
 
   mainBackground(){
-    return Positioned(
-      //top: 1,
-      child: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            fit: BoxFit.cover,
-            image: AssetImage(
-              "assets/images/Fondo.png"
+    if(darkmode){
+      return Positioned(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(
+                "assets/images/FondoDark.png"
+              )
             )
-          )
-        ),
-      )
-    );
+          ),
+        )
+      );
+    }else{
+      return Positioned(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(
+                "assets/images/Fondo.png"
+              )
+            )
+          ),
+        )
+      );
+    }
   }
   
   text(String text){
@@ -164,37 +194,55 @@ class _LoginState extends State<Login> {
   }
 
   loginButton(double distanceFromBottom){
-    return Positioned(
-      bottom: distanceFromBottom,
-      child: LargeRectangularButton(
-        backgroundColor: Colors.white, 
-        textColor: AppColor.fonts, 
-        text: "login",
-        onTap: () => onPressed()
-      )
-    );
+    if(darkmode){
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: LargeRectangularButton(
+          backgroundColor: AppColor.darkModeGrey, 
+          textColor: Colors.white, 
+          text: "login",
+          onTap: () => onPressed()
+        )
+      );
+    }else{
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: LargeRectangularButton(
+          backgroundColor: Colors.white, 
+          textColor: AppColor.fonts, 
+          text: "login",
+          onTap: () => onPressed()
+        )
+      );
+    }
   }
 
   onPressed(){
-      if(validation()){
+    List<int> bytes=utf8.encode(emailTextController.text);
+    Digest digest=sha384.convert(bytes);
+    String email=digest.toString();
+
+    bytes=utf8.encode(passwordTextController.text);
+    digest=sha384.convert(bytes);
+    String password=digest.toString();
+
+      if(validation(email,password)){
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => Control()),
+          MaterialPageRoute(builder: (context) => const Control()),
           (route) => false
         );    
       }
   }
 
-  late List<LoginCredential>loginCredentials;
   final snackBar = const SnackBar(content: Text('Error, the credential does not exist!'));//muestra un mensaje en la pantalla del dispositivo
 
-  bool validation(){
-    String email=emailTextController.text,
-    password=passwordTextController.text;
+  bool validation(String email,String password){
 
     for(LoginCredential credential in loginCredentials){
       if(email==credential.email){
         if(password==credential.password){
+          saveSettings(email,password);
           return true;
         }
       }
@@ -202,6 +250,18 @@ class _LoginState extends State<Login> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
     return false;
   }
+
+  saveSettings(String email,String password)async{
+    PreferencesService setSettings=PreferencesService();
+    setSettings.saveLoginSettings(
+      LoginSettings(
+        email: email, 
+        password: password
+      )
+    );
+  }
+
+  late List<LoginCredential>loginCredentials;
 
   Future getData(String url) async {//funcion para recibir la informacion del servidor sobre los logins, la formatea y la guarda en estructuras de datos necesarias
     loginCredentials=<LoginCredential>[];

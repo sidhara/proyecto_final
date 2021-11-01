@@ -11,23 +11,34 @@ import 'package:proyecto_final/frames/humidity.dart';
 import 'package:proyecto_final/frames/ph.dart';
 import 'package:proyecto_final/frames/temperature.dart';
 import 'package:proyecto_final/frames/water.dart';
+//import para la persistencia de datos de configuracion en el sistema
+import 'package:proyecto_final/settings/settings.dart';
 
 class Control extends StatefulWidget {
-  Control({Key? key}) : super(key: key);
-
+  const Control({Key? key}) : super(key: key);
   @override
   _ControlState createState() => _ControlState();
 }
 
 class _ControlState extends State<Control> {
+  bool darkmode=false;
 
   @override
   void initState(){
     super.initState();
+    
     SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
     ]);
+
+    loadDarkModeSetting();
+  }
+
+  loadDarkModeSetting()async{
+    final prefereredSetting=PreferencesService();
+    DarkmodeSetting setting=await prefereredSetting.getDarkmodeSettings();
+    darkmode=setting.darkmode!;    
   }
 
   @override
@@ -35,6 +46,7 @@ class _ControlState extends State<Control> {
     double heigth=MediaQuery.of(context).size.height;
     
     return Scaffold(
+      // ignore: sized_box_for_whitespace
       body: Container(
         height: heigth,
         child: Stack(
@@ -56,23 +68,39 @@ class _ControlState extends State<Control> {
         phButton(400),
         temperatureButton(480),
         waterButton(20),
+        switchMode(20)
       ],
     );
   }
 
   mainBackground(){
-    return Positioned(
-      child: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            fit: BoxFit.cover,
-            image: AssetImage(
-              "assets/images/Fondo.png"
+    if(darkmode){
+      return Positioned(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(
+                "assets/images/FondoDark.png"
+              )
             )
-          )
-        ),
-      )
-    );
+          ),
+        )
+      );
+    }else{
+      return Positioned(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              fit: BoxFit.cover,
+              image: AssetImage(
+                "assets/images/Fondo.png"
+              )
+            )
+          ),
+        )
+      );
+    }
   }
   
   text(String text){
@@ -148,16 +176,52 @@ class _ControlState extends State<Control> {
   }  
 
   waterButton(double distanceFromBottom){
-    return Positioned(
-      bottom: distanceFromBottom,
-      child: LargeCircularButton(
-        backgroundColor: Colors.white, 
-        textColor: AppColor.fonts, 
-        text: "WATER",
-        onTap: () => onPressed(3)
-      )
-    );
+    if(darkmode){
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: LargeCircularButton(
+          backgroundColor: AppColor.darkModeGrey, 
+          textColor: Colors.white, 
+          text: "WATER",
+          onTap: () => onPressed(3)
+        )
+      );
+    }else{
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: LargeCircularButton(
+          backgroundColor: Colors.white, 
+          textColor: AppColor.fonts, 
+          text: "WATER",
+          onTap: () => onPressed(3)
+        )
+      );
+    }
   }  
+
+  switchMode(double distanceFromBottom){
+    if(darkmode){
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: SmallCircularButtonCustom(
+          backgroundColor: AppColor.darkModeGrey, 
+          onTap: () => onPressed(4),
+          type: 'darkmode',
+          iconColor: Colors.white,
+        )
+      );
+    }else{
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: SmallCircularButtonCustom(
+          backgroundColor: Colors.white, 
+          onTap: () => onPressed(4),
+          type: 'darkmode',
+          iconColor: AppColor.fonts,
+        )
+      );
+    }
+  }
 
   goBackButton(double distanceFromBottom){
     return Positioned(
@@ -191,8 +255,19 @@ class _ControlState extends State<Control> {
         context,
         MaterialPageRoute(builder: (context) => const Water()),
       );    
-    }else{
-      Navigator.pop(context);
+    }else if(type==4){
+      setState(() {
+        darkmode=!darkmode;
+        saveSettings();
+      });
     }
   }
+
+  saveSettings()async{
+    PreferencesService setSettings=PreferencesService();
+    setSettings.saveDarkmodeSettings(
+      DarkmodeSetting(darkmode: darkmode)
+    );
+  }
+
 }
