@@ -8,12 +8,14 @@ class LargeRectangularButton extends StatelessWidget {
   final String text;
   final Function()? onTap;
   final bool? isBorder;
+  
   const LargeRectangularButton({Key? key,
   required this.backgroundColor,
   required this.textColor,
   required this.text,
   this.onTap,
-  this.isBorder=false}) : super(key: key);
+  this.isBorder=false
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

@@ -130,7 +130,7 @@ class _ControlState extends State<Control> {
         decoration: 
           BoxDecoration(
             color: AppColor.green,
-            borderRadius: BorderRadius.only(
+            borderRadius: const BorderRadius.only(
               topRight: Radius.circular(30),
               topLeft:  Radius.circular(30)
             ) 
