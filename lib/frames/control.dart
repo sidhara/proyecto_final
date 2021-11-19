@@ -38,7 +38,13 @@ class _ControlState extends State<Control> {
   loadDarkModeSetting()async{
     final prefereredSetting=PreferencesService();
     DarkmodeSetting setting=await prefereredSetting.getDarkmodeSettings();
-    darkmode=setting.darkmode!;    
+    setState(() {
+      if(setting.darkmode==null) {
+        darkmode=false;
+      } else {
+        darkmode=setting.darkmode!;
+      }   
+    }); 
   }
 
   @override

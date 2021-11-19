@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:proyecto_final/frames/control.dart';
 //import para la navegacion entre frames
 import 'package:proyecto_final/frames/login.dart';
+//import para la persistencia de datos de configuracion en el sistema
 import 'package:proyecto_final/settings/settings.dart';
 
 class Presentation extends StatefulWidget {
@@ -22,6 +23,9 @@ class _PresentationState extends State<Presentation> {
 
   @override
   void initState(){
+
+    loadDarkModeSetting();
+
     super.initState();
 
     SystemChrome.setPreferredOrientations([//se controla la orientacion del frame para bloquearla verticalmente
@@ -29,13 +33,18 @@ class _PresentationState extends State<Presentation> {
         DeviceOrientation.portraitDown,
     ]);
     
-    loadDarkModeSetting();
   }
 
   loadDarkModeSetting()async{
     final prefereredSetting=PreferencesService();
     DarkmodeSetting setting=await prefereredSetting.getDarkmodeSettings();
-    darkmode=setting.darkmode!;    
+    setState(() {
+      if(setting.darkmode==null) {
+        darkmode=false;
+      } else {
+        darkmode=setting.darkmode!;
+      }   
+    }); 
   }
 
   @override

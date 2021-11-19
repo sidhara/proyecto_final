@@ -1,6 +1,7 @@
 <?php
 require_once('db.php');
-$query = 'SELECT * FROM humidity';
+$username=$_GET['username'];
+$query = "SELECT * FROM data WHERE username = '$username'";
 $stm = $conn->prepare($query);
 $stm->execute();
 $row = $stm->fetchAll(PDO::FETCH_ASSOC);

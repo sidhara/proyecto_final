@@ -23,7 +23,7 @@ class Humidity extends StatefulWidget {
 
 class _HumidityState extends State<Humidity> {
 
-  String url='https://naturemonitorsoftware.000webhostapp.com/getHumidity.php';//url del servicio que continene los datos de la humedad para consumir | https://naturemonitorsoftware.000webhostapp.com/getHumidity.php | http://3.220.8.74/getHumidity.php
+  String url='naturemonitorsoftware.000webhostapp.com',path='/getHumidity.php';//url del servicio que continene los datos de la humedad para consumir | https://naturemonitorsoftware.000webhostapp.com/getHumidity.php | http://3.220.8.74/getHumidity.php
 
   bool darkmode=false;
 
@@ -36,7 +36,7 @@ class _HumidityState extends State<Humidity> {
         DeviceOrientation.landscapeRight,
     ]);
 
-    getData(url);//se obtienen los datos inicialmente y se cargan las estructuras de datos y charts
+    getData(url,path);//se obtienen los datos inicialmente y se cargan las estructuras de datos y charts
     
     loadDarkModeSetting();
   }
@@ -44,7 +44,13 @@ class _HumidityState extends State<Humidity> {
   loadDarkModeSetting()async{
     final prefereredSetting=PreferencesService();
     DarkmodeSetting setting=await prefereredSetting.getDarkmodeSettings();
-    darkmode=setting.darkmode!;    
+    setState(() {
+      if(setting.darkmode==null) {
+        darkmode=false;
+      } else {
+        darkmode=setting.darkmode!;
+      }   
+    }); 
   }
 
   @override
@@ -194,7 +200,7 @@ class _HumidityState extends State<Humidity> {
     if(option==0){
       Navigator.pop(context);//se navega al frame anterior
     }if(option==1){
-      getData(url);//se actualiza el frame y la informacion
+      getData(url,path);//se actualiza el frame y la informacion
     }if(option==2){
       analyse();//se analiza el estado de la humedad y se toman acciones acorde a los resultados
     }
@@ -360,60 +366,76 @@ class _HumidityState extends State<Humidity> {
   late List<HumiditySeries> humiditySeries;
   String latestHumidity='';
 
-  Future getData(String url)async{//funcion para recibir la informacion del servidor sobre la humedad, la formatea y la guarda en estructuras de datos necesarias para su display
+  final snackBarData = const SnackBar(content: Text('Not enough data! at least 5 samples are needed to work'));//muestra un mensaje en la pantalla del dispositivo
+
+  Future getData(String url,String path)async{//funcion para recibir la informacion del servidor sobre la humedad, la formatea y la guarda en estructuras de datos necesarias para su display
+
     humidityData=<HumidityData>[];
     humiditySeries=<HumiditySeries>[];
-    Uri uri=Uri.parse(url);
+
+    final prefereredSetting=PreferencesService();//obtencion de los datos guardados
+    LoginSettings savedLoginSettings=await prefereredSetting.getLoginSettings();
+    String? username=savedLoginSettings.username;
+    
+    final queryParameters = {
+      'username': username,
+    };
+    Uri uri=Uri.http(url,path,queryParameters);
     http.Response response=await http.get(uri);
+
     if(response.body.isNotEmpty) {
       if (response.statusCode == 200){
-        List data=json.decode(response.body);//{humidity: 91, id: 28, d1: 2021-10-14 19:54:44}
-        List<Text> values;
-        for(dynamic dato in data){
-          values=dato.toString().split(', ').map((String text) => Text(text)).toList();
+        List data=json.decode(response.body);//{payload: 91, id: 28, d1: 2021-10-14 19:54:44, username: example}
+        if(data.isNotEmpty && data.length>=5){
+          List<Text> values;
+          for(dynamic dato in data){
+            values=dato.toString().split(', ').map((String text) => Text(text)).toList();
 
-          //Arreglo del formato del Datetime
-          List<Text> date=values[2].data!.substring(4).split(' ').map((String text) => Text(text)).toList();
-          String fixedDate=date[0].data!+"T"+date[1].data!.substring(0,8);
+            //Arreglo del formato del Datetime
+            List<Text> date=values[2].data!.substring(4).split(' ').map((String text) => Text(text)).toList();
+            String fixedDate=date[0].data!+"T"+date[1].data!;
 
-            humidityData.add(
-              HumidityData(
-                int.parse(values[1].data!.substring(4)), 
-                double.parse(values[0].data!.substring(11)), 
-                DateTime.parse(fixedDate)
-              )
-            );
-        }
-        sort();//se ordena la serie de datos
-
-        double avgHumidity=0;
-        for(HumidityData data in humidityData){
-          avgHumidity+=data.humidity;
-        }
-        avgHumidity=avgHumidity/humidityData.length;
-        double thirtyPercent=(avgHumidity/100)*30;
-
-        int n=5;//numero de barras/puntos a mostrar en la grafica
-        for(int i=humidityData.length-n;i<humidityData.length;i++){
-          if(humidityData[i].humidity<=thirtyPercent){
-            humiditySeries.add(
-              HumiditySeries(
-                date: humidityData[i].date, 
-                humidity: humidityData[i].humidity,
-                barColor: charts.ColorUtil.fromDartColor(AppColor.lightRed)
-              )
-            );
-          }else{
-            humiditySeries.add(
-              HumiditySeries(
-                date: humidityData[i].date, 
-                humidity: humidityData[i].humidity,
-                barColor: charts.ColorUtil.fromDartColor(AppColor.blue)
-              )
-            );
+              humidityData.add(
+                HumidityData(
+                  int.parse(values[1].data!.substring(4)), 
+                  double.parse(values[0].data!.substring(10)), 
+                  DateTime.parse(fixedDate)
+                )
+              );
           }
+          sort();//se ordena la serie de datos
+
+          double avgHumidity=0;
+          for(HumidityData data in humidityData){
+            avgHumidity+=data.humidity;
+          }
+          avgHumidity=avgHumidity/humidityData.length;
+          double thirtyPercent=(avgHumidity/100)*30;
+
+          int n=5;//numero de barras/puntos a mostrar en la grafica
+          for(int i=humidityData.length-n;i<humidityData.length;i++){
+            if(humidityData[i].humidity<=thirtyPercent){
+              humiditySeries.add(
+                HumiditySeries(
+                  date: humidityData[i].date, 
+                  humidity: humidityData[i].humidity,
+                  barColor: charts.ColorUtil.fromDartColor(AppColor.lightRed)
+                )
+              );
+            }else{
+              humiditySeries.add(
+                HumiditySeries(
+                  date: humidityData[i].date, 
+                  humidity: humidityData[i].humidity,
+                  barColor: charts.ColorUtil.fromDartColor(AppColor.blue)
+                )
+              );
+            }
+          }
+          latestHumidity=humiditySeries[humiditySeries.length-1].humidity.toString();
+        }else{
+          ScaffoldMessenger.of(context).showSnackBar(snackBarData);//muestra un mensaje en la pantalla del dispositivo
         }
-        latestHumidity=humiditySeries[humiditySeries.length-1].humidity.toString();
       }
     }
     setState(() {});

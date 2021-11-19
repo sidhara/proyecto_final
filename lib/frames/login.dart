@@ -45,7 +45,13 @@ class _LoginState extends State<Login> {
   loadDarkModeSetting()async{
     final prefereredSetting=PreferencesService();
     DarkmodeSetting setting=await prefereredSetting.getDarkmodeSettings();
-    darkmode=setting.darkmode!;    
+    setState(() {
+      if(setting.darkmode==null) {
+        darkmode=false;
+      } else {
+        darkmode=setting.darkmode!;
+      }   
+    }); 
   }
 
   @override
@@ -218,12 +224,10 @@ class _LoginState extends State<Login> {
   }
 
   onPressed(){
-    List<int> bytes=utf8.encode(emailTextController.text);
-    Digest digest=sha384.convert(bytes);
-    String email=digest.toString();
+    String email=emailTextController.text;
 
-    bytes=utf8.encode(passwordTextController.text);
-    digest=sha384.convert(bytes);
+    List<int> bytes=utf8.encode(passwordTextController.text);
+    Digest digest=sha384.convert(bytes);
     String password=digest.toString();
 
       if(validation(email,password)){
@@ -238,11 +242,10 @@ class _LoginState extends State<Login> {
   final snackBar = const SnackBar(content: Text('Error, the credential does not exist!'));//muestra un mensaje en la pantalla del dispositivo
 
   bool validation(String email,String password){
-
     for(LoginCredential credential in loginCredentials){
       if(email==credential.email){
         if(password==credential.password){
-          saveSettings(email,password);
+          saveSettings(email,password,credential.username);
           return true;
         }
       }
@@ -251,12 +254,13 @@ class _LoginState extends State<Login> {
     return false;
   }
 
-  saveSettings(String email,String password)async{
+  saveSettings(String email,String password,String username)async{
     PreferencesService setSettings=PreferencesService();
     setSettings.saveLoginSettings(
       LoginSettings(
         email: email, 
-        password: password
+        password: password,
+        username: username
       )
     );
   }
@@ -270,15 +274,16 @@ class _LoginState extends State<Login> {
     http.Response response=await http.get(uri);
       if(response.body.isNotEmpty){
         if(response.statusCode==200){
-          List credentials=json.decode(response.body);//{id: 1, email: example@gmail.com, password: example}
+          List credentials=json.decode(response.body);//{id: 1, username: test, password: example, email: example@gmail.com}
           List<Text> credentialInfo;
           for(dynamic crendential in credentials){
             credentialInfo=crendential.toString().split(', ').map((String text) => Text(text)).toList();
             loginCredentials.add(
               LoginCredential(
                 int.parse(credentialInfo[0].data!.substring(5)), 
-                credentialInfo[1].data!.substring(7), 
-                credentialInfo[2].data!.substring(10,credentialInfo[2].data!.length-1)
+                credentialInfo[3].data!.substring(7,credentialInfo[3].data!.length-1), 
+                credentialInfo[2].data!.substring(11),
+                credentialInfo[1].data!.substring(10)
               )
             );
           }
@@ -290,7 +295,8 @@ class _LoginState extends State<Login> {
 class LoginCredential{
   late int id;
   late String email;
+  late String username;
   late String password;
 
-  LoginCredential(this.id,this.email,this.password);
+  LoginCredential(this.id,this.email,this.password,this.username);
 }
