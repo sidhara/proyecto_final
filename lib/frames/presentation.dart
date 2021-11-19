@@ -23,7 +23,6 @@ class _PresentationState extends State<Presentation> {
 
   @override
   void initState(){
-
     loadDarkModeSetting();
 
     super.initState();

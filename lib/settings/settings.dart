@@ -17,6 +17,7 @@ class PreferencesService{
     preferences.remove('email');
     preferences.remove('password');
     preferences.remove('username');
+    preferences.remove('darkmode');
   }
 
   Future saveDarkmodeSettings(DarkmodeSetting settings)async{

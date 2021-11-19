@@ -209,7 +209,7 @@ class _HumidityState extends State<Humidity> {
   double m=0,b=0;
   double f(int x){return b+m*x;}
 
-  analyse(){
+  analyse(){//funcion de analisis de los datos
     //regresion lineal
     int n=humidityData.length;
     
@@ -262,10 +262,8 @@ class _HumidityState extends State<Humidity> {
     //muestra en pantalla la info sobre el analisis de los datos y toma la decision
     createAlertDialog(context, sumY/n, relativeError, cuadraticError, yReal, humiditySlope);
   }
-  
-  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
 
-  createAlertDialog(BuildContext context, double yAverage, double relativeError, double cuadraticError, double latestHumidity, String humiditySlope){
+  createAlertDialog(BuildContext context, double yAverage, double relativeError, double cuadraticError, double latestHumidity, String humiditySlope){//display del analisis y toma de decision de riego
     return showDialog(
       context: context,
       builder: (context){
@@ -294,9 +292,7 @@ class _HumidityState extends State<Humidity> {
               MaterialButton(
                 child: const Text('Irrigate'),
                 onPressed: (){
-                  //codigo para el downlink de riego
-                  ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
-                  Navigator.of(context).pop();
+                  irrigate();
                 }
               )
             ],
@@ -304,6 +300,14 @@ class _HumidityState extends State<Humidity> {
         }
       }
     );
+  }
+  
+  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
+
+  irrigate(){//en desarrollo
+    //codigo para el downlink de riego
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
+    Navigator.of(context).pop();
   }
 
   chart(double distanceFromTop){

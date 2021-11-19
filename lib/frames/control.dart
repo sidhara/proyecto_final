@@ -10,6 +10,7 @@ import 'package:proyecto_final/components/smallCircularButton.dart';
 import 'package:proyecto_final/frames/humidity.dart';
 import 'package:proyecto_final/frames/ph.dart';
 import 'package:proyecto_final/frames/temperature.dart';
+import 'package:proyecto_final/frames/user.dart';
 import 'package:proyecto_final/frames/water.dart';
 //import para la persistencia de datos de configuracion en el sistema
 import 'package:proyecto_final/settings/settings.dart';
@@ -74,7 +75,8 @@ class _ControlState extends State<Control> {
         phButton(400),
         temperatureButton(480),
         waterButton(20),
-        switchMode(20)
+        switchMode(20),
+        user(20)
       ],
     );
   }
@@ -229,16 +231,29 @@ class _ControlState extends State<Control> {
     }
   }
 
-  goBackButton(double distanceFromBottom){
-    return Positioned(
-      bottom: distanceFromBottom,
-      child: SmallCircularButtonCustom(
-        backgroundColor: Colors.white, 
-        onTap: () => onPressed(4),
-        type: 'go_back',
-      )
-    );
-  }  
+  user(double distanceFromBottom){
+    if(darkmode){
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: SmallCircularButtonCustom(
+          backgroundColor: AppColor.darkModeGrey, 
+          onTap: () => onPressed(5),
+          type: 'user',
+          iconColor: Colors.white,
+        )
+      );
+    }else{
+      return Positioned(
+        bottom: distanceFromBottom,
+        child: SmallCircularButtonCustom(
+          backgroundColor: Colors.white, 
+          onTap: () => onPressed(5),
+          type: 'user',
+          iconColor: AppColor.fonts,
+        )
+      );
+    }
+  }
 
   onPressed(int type){//se maneja la navegacion a cada uno de los frames siguientes
     if(type==0){
@@ -266,6 +281,11 @@ class _ControlState extends State<Control> {
         darkmode=!darkmode;
         saveSettings();
       });
+    }else if(type==5){
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const User()),
+      );  
     }
   }
 
@@ -275,5 +295,4 @@ class _ControlState extends State<Control> {
       DarkmodeSetting(darkmode: darkmode)
     );
   }
-
 }

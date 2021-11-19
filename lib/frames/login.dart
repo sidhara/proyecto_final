@@ -10,8 +10,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';//tambien se usa para la encriptacion
 //import para la navegacion entre frames
 import 'package:proyecto_final/frames/control.dart';
-//import para la encriptacion usando hash
-import 'package:crypto/crypto.dart';
 //import para la persistencia de datos de configuracion en el sistema
 import 'package:proyecto_final/settings/settings.dart';
 
@@ -24,7 +22,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
 
-  String url='https://naturemonitorsoftware.000webhostapp.com/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | http://3.220.8.74/getLogin.php
+  String url='naturemonitorsoftware.000webhostapp.com',path='/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | http://3.220.8.74/getLogin.php
 
   bool darkmode=false;
 
@@ -37,8 +35,6 @@ class _LoginState extends State<Login> {
         DeviceOrientation.portraitDown,
     ]);
 
-    getData(url);//se obtienen los datos inicialmente y se cargan las estructuras de datos y validaciones
-    
     loadDarkModeSetting();
   }
 
@@ -223,14 +219,13 @@ class _LoginState extends State<Login> {
     }
   }
 
-  onPressed(){
+  onPressed() async {
     String email=emailTextController.text;
+    String password=passwordTextController.text;
 
-    List<int> bytes=utf8.encode(passwordTextController.text);
-    Digest digest=sha384.convert(bytes);
-    String password=digest.toString();
+    bool exist=await validation(email,password);
 
-      if(validation(email,password)){
+      if(exist){
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (context) => const Control()),
@@ -241,15 +236,18 @@ class _LoginState extends State<Login> {
 
   final snackBar = const SnackBar(content: Text('Error, the credential does not exist!'));//muestra un mensaje en la pantalla del dispositivo
 
-  bool validation(String email,String password){
-    for(LoginCredential credential in loginCredentials){
-      if(email==credential.email){
-        if(password==credential.password){
+  Future<bool> validation(String email,String password) async {
+
+    await getData(email, password);
+    if(loginCredentials.isNotEmpty){
+      for(LoginCredential credential in loginCredentials){
+        if(email==credential.email){
           saveSettings(email,password,credential.username);
-          return true;
         }
       }
+      return true;
     }
+
     ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
     return false;
   }
@@ -267,10 +265,15 @@ class _LoginState extends State<Login> {
 
   late List<LoginCredential>loginCredentials;
 
-  Future getData(String url) async {//funcion para recibir la informacion del servidor sobre los logins, la formatea y la guarda en estructuras de datos necesarias
+  Future getData(String email, String password) async {//funcion para recibir la informacion del servidor sobre los logins, la formatea y la guarda en estructuras de datos necesarias
     loginCredentials=<LoginCredential>[];
 
-    Uri uri=Uri.parse(url);
+    final queryParameters = {
+      'email': email,
+      'password': password
+    };
+
+    Uri uri=Uri.http(url,path,queryParameters);
     http.Response response=await http.get(uri);
       if(response.body.isNotEmpty){
         if(response.statusCode==200){

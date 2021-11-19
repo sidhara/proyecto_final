@@ -88,11 +88,11 @@ class SmallCircularButtonCustom extends StatelessWidget {
           )
         ),
       );
-    }else{
+    }else if(type=='darkmode'){
       return GestureDetector(
         onTap: onTap,
         child: Container(
-          margin: EdgeInsets.only(left: MediaQuery.of(context).size.width-75,top: 5),
+          margin: EdgeInsets.only(left: MediaQuery.of(context).size.width-60,bottom: 5),
           height: 50,
           width: 50,
           decoration: BoxDecoration(
@@ -106,6 +106,30 @@ class SmallCircularButtonCustom extends StatelessWidget {
           child: Center(
             child: Icon(
               Icons.dark_mode,
+              size: 30,
+              color: iconColor,
+            ),
+          )
+        ),
+      );
+    }else{//if(type=='user')
+      return GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: const EdgeInsets.only(left: 10,bottom: 5),
+          height: 50,
+          width: 50,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: BorderRadius.circular(150),
+            border: Border.all(
+              width: 2,
+              color: backgroundColor
+            )
+          ),
+          child: Center(
+            child: Icon(
+              Icons.person,
               size: 30,
               color: iconColor,
             ),
