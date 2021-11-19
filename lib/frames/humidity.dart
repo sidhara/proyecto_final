@@ -302,11 +302,11 @@ class _HumidityState extends State<Humidity> {
     );
   }
   
-  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
+  final snackBarIrrigation = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
 
   irrigate(){//en desarrollo
     //codigo para el downlink de riego
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
+    ScaffoldMessenger.of(context).showSnackBar(snackBarIrrigation);//muestra un mensaje en la pantalla del dispositivo
     Navigator.of(context).pop();
   }
 
