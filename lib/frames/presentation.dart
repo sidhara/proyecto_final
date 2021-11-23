@@ -69,6 +69,7 @@ class _PresentationState extends State<Presentation> {
       children: [
         mainBackground(),
         logo(150),
+        text('PlantZilla'),
         startButton(20)
       ],
     );
@@ -103,43 +104,58 @@ class _PresentationState extends State<Presentation> {
       );
     }
   }
-  
-  logo(double distanceFromTop){
+    
+  text(String text){
     if(darkmode){
       return Positioned(
-        left: MediaQuery.of(context).size.width/6,//MediaQuery.of(context).size.width es el ancho de la pantalla del dispositivo 
-        top: distanceFromTop,
-        child: Container(
-          height: 300,
-          width: 300,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              scale: 0.8,
-              image: AssetImage(
-                "assets/images/LogoDark1.png"
-              )
-            )
+        top: 400,
+        width: 200,
+        left: (MediaQuery.of(context).size.width-200)/2,
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 40,
+            color: Colors.white
           ),
-        )
+        ) 
       );
     }else{
       return Positioned(
-        left: MediaQuery.of(context).size.width/6,//MediaQuery.of(context).size.width es el ancho de la pantalla del dispositivo 
-        top: distanceFromTop,
-        child: Container(
-          height: 300,
-          width: 300,
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              scale: 0.8,
-              image: AssetImage(
-                "assets/images/Logo1.png"
-              )
-            )
+        top: 400,
+        width: 200,
+        left: (MediaQuery.of(context).size.width-200)/2,
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 40,
+            color: Colors.black54
           ),
-        )
+        ) 
       );
     }
+  }
+
+  logo(double distanceFromTop){
+    return Positioned(
+      left: (MediaQuery.of(context).size.width-300)/2,//MediaQuery.of(context).size.width es el ancho de la pantalla del dispositivo 
+      top: distanceFromTop,
+      child: Container(
+        height: 300,
+        width: 300,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            scale: 0.8,
+            image: AssetImage(
+              "assets/images/Logo.ico"
+            )
+          )
+        ),
+      )
+    );
   }
 
   startButton(double distanceFromBottom){

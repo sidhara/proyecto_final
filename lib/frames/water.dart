@@ -5,7 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:proyecto_final/components/smallCircularButton.dart';
 import 'package:proyecto_final/components/colors.dart';
 import 'package:proyecto_final/components/largeCircularButton.dart';
+//import para la persistencia de datos de configuracion en el sistema
 import 'package:proyecto_final/settings/settings.dart';
+//import para la conexion al sql
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Water extends StatefulWidget {
   const Water({Key? key}) : super(key: key);
@@ -213,10 +217,44 @@ class _WaterState extends State<Water> {
     }
   }
 
-  final snackBar = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
+  final snackBarIrrigationSuccesful = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
+  final snackBarIrrigationFailed = const SnackBar(content: Text('Irrigation failed!'));
 
-  irrigate(){//en desarrollo
-    //code para downlink de riego
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);//muestra un mensaje en la pantalla del dispositivo
+  irrigate() async {//en desarrollo
+
+    String server="nam1",
+    application="bananawateringg",
+    device="eui-70b3d57ed004631f",
+    apikey="NNSXS.IW3W2QYMMCVANQEHLILSLVD6CSHO6YPMDWAUPGQ.FCI4MHNP7EK2HZ2WS7QKXTZ4QLLT5VFQERT4ZOLL2DA5JZ23NQ6Q",
+    value='AQID';
+
+    String url=server+".cloud.thethings.network",
+      path="/api/v3/as/applications/"+application+"/devices/"+device+"/down/push";
+
+    final headers={
+    'content-type' : 'application/json',
+    'User-Agent' : 'h1/3',
+    'Authorization': 'Bearer '+apikey
+    };
+
+    final body = jsonEncode(
+      { 'downlinks': [
+        {
+          'frm_payload': value,
+          'f_port':1
+        } 
+      ]
+      }
+    );    
+
+    Uri uri=Uri.parse("https://"+url+path);
+    http.Response response=await http.post(uri,headers: headers,body: body);
+
+    if(response.statusCode==200){
+      ScaffoldMessenger.of(context).showSnackBar(snackBarIrrigationSuccesful);//muestra un mensaje en la pantalla del dispositivo
+    }
+    else{
+      ScaffoldMessenger.of(context).showSnackBar(snackBarIrrigationFailed);
+    }
   }
 }

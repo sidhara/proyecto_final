@@ -23,7 +23,7 @@ class Humidity extends StatefulWidget {
 
 class _HumidityState extends State<Humidity> {
 
-  String url='naturemonitorsoftware.000webhostapp.com',path='/getHumidity.php';//url del servicio que continene los datos de la humedad para consumir | https://naturemonitorsoftware.000webhostapp.com/getHumidity.php | http://3.220.8.74/getHumidity.php
+  String url='www.plantzilla.org',pathData='/app/getHumidity.php',pathIrrigate="";//url del servicio que continene los datos de la humedad para consumir | https://naturemonitorsoftware.000webhostapp.com/getHumidity.php | https://www.plantzilla.org/app/getHumidity.php
 
   bool darkmode=false;
 
@@ -36,7 +36,7 @@ class _HumidityState extends State<Humidity> {
         DeviceOrientation.landscapeRight,
     ]);
 
-    getData(url,path);//se obtienen los datos inicialmente y se cargan las estructuras de datos y charts
+    getData(url,pathData);//se obtienen los datos inicialmente y se cargan las estructuras de datos y charts
     
     loadDarkModeSetting();
   }
@@ -200,7 +200,7 @@ class _HumidityState extends State<Humidity> {
     if(option==0){
       Navigator.pop(context);//se navega al frame anterior
     }if(option==1){
-      getData(url,path);//se actualiza el frame y la informacion
+      getData(url,pathData);//se actualiza el frame y la informacion
     }if(option==2){
       analyse();//se analiza el estado de la humedad y se toman acciones acorde a los resultados
     }
@@ -302,11 +302,46 @@ class _HumidityState extends State<Humidity> {
     );
   }
   
-  final snackBarIrrigation = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
+  final snackBarIrrigationSuccesful = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
+  final snackBarIrrigationFailed = const SnackBar(content: Text('Irrigation failed!'));
 
-  irrigate(){//en desarrollo
-    //codigo para el downlink de riego
-    ScaffoldMessenger.of(context).showSnackBar(snackBarIrrigation);//muestra un mensaje en la pantalla del dispositivo
+  irrigate() async {
+
+    String server="nam1",
+    application="bananawateringg",
+    device="eui-70b3d57ed004631f",
+    apikey="NNSXS.IW3W2QYMMCVANQEHLILSLVD6CSHO6YPMDWAUPGQ.FCI4MHNP7EK2HZ2WS7QKXTZ4QLLT5VFQERT4ZOLL2DA5JZ23NQ6Q",
+    value='AQID';
+
+    String url=server+".cloud.thethings.network",
+      path="/api/v3/as/applications/"+application+"/devices/"+device+"/down/push";
+
+    final headers={
+    'content-type' : 'application/json',
+    'User-Agent' : 'h1/3',
+    'Authorization': 'Bearer '+apikey
+    };
+
+    final body = jsonEncode(
+      { 'downlinks': [
+        {
+          'frm_payload': value,
+          'f_port':1
+        } 
+      ]
+      }
+    );    
+
+    Uri uri=Uri.parse("https://"+url+path);
+    http.Response response=await http.post(uri,headers: headers,body: body);
+
+    if(response.statusCode==200){
+      ScaffoldMessenger.of(context).showSnackBar(snackBarIrrigationSuccesful);//muestra un mensaje en la pantalla del dispositivo
+    }
+    else{
+      ScaffoldMessenger.of(context).showSnackBar(snackBarIrrigationFailed);
+    }
+    
     Navigator.of(context).pop();
   }
 

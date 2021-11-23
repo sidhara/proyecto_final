@@ -22,9 +22,9 @@ class LargeRectangularButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(left: 30, right: 30),
+        margin: const EdgeInsets.only(left: 45, right: 45),
         height: 60,
-        width: MediaQuery.of(context).size.width-60,
+        width: MediaQuery.of(context).size.width-90,
         decoration: BoxDecoration(
           color: backgroundColor,
           borderRadius: BorderRadius.circular(20),

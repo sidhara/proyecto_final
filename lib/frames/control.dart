@@ -72,8 +72,8 @@ class _ControlState extends State<Control> {
         text('Control'),
         tray(300),
         humidityButton(320),
-        phButton(400),
-        temperatureButton(480),
+        /*phButton(400),
+        temperatureButton(480),*/
         waterButton(20),
         switchMode(20),
         user(20)

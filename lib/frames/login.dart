@@ -22,7 +22,7 @@ class Login extends StatefulWidget {
 
 class _LoginState extends State<Login> {
 
-  String url='naturemonitorsoftware.000webhostapp.com',path='/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | http://3.220.8.74/getLogin.php
+  String url='www.plantzilla.org',path='/app/getLogin.php';//url del servicio que continene los datos de las credenciales de inicio de sesion para consumir | https://naturemonitorsoftware.000webhostapp.com/getLogin.php | https://www.plantzilla.org/app/getLogin.php
 
   bool darkmode=false;
 
@@ -130,17 +130,16 @@ class _LoginState extends State<Login> {
 
   logo(){
     return Positioned(
-      left: MediaQuery.of(context).size.width/6,
+      left: (MediaQuery.of(context).size.width-300)/2,//MediaQuery.of(context).size.width es el ancho de la pantalla del dispositivo 
       top: 100,
       child: Container(
-        //alignment: Alignment.center,
         height: 300,
         width: 300,
         decoration: const BoxDecoration(
           image: DecorationImage(
             scale: 0.8,
             image: AssetImage(
-              "assets/images/Logo.png"
+              "assets/images/Logo.ico"
             )
           )
         ),
