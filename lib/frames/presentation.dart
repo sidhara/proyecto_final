@@ -69,7 +69,7 @@ class _PresentationState extends State<Presentation> {
       children: [
         mainBackground(),
         logo(150),
-        text('PlantZilla'),
+        text('Plantzilla'),
         startButton(20)
       ],
     );

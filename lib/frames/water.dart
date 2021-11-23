@@ -220,7 +220,7 @@ class _WaterState extends State<Water> {
   final snackBarIrrigationSuccesful = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
   final snackBarIrrigationFailed = const SnackBar(content: Text('Irrigation failed!'));
 
-  irrigate() async {//en desarrollo
+  irrigate() async {
 
     String server="nam1",
     application="bananawateringg",

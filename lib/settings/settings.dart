@@ -11,12 +11,18 @@ class PreferencesService{
     await preferences.setString('username', settings.username!);
   }
 
+  Future saveDeviceId(String deviceId)async{
+    final preferences=await SharedPreferences.getInstance();
+    await preferences.setString('deviceId', deviceId);
+  }
+
   Future deleteLoginSettings()async{
     final preferences=await SharedPreferences.getInstance();
     
     preferences.remove('email');
     preferences.remove('password');
     preferences.remove('username');
+    preferences.remove('deviceId');
     preferences.remove('darkmode');
   }
 
@@ -30,11 +36,13 @@ class PreferencesService{
     final String? email=preferences.getString('email');
     final String? username=preferences.getString('username');
     final String? password=preferences.getString('password');
+    final String? deviceId=preferences.getString('deviceId');
 
     return LoginSettings(
       email: email, 
       username: username,
-      password: password
+      password: password,
+      deviceId: deviceId
     );
   }
 
@@ -50,8 +58,9 @@ class LoginSettings{
   final String? email;
   final String? username;
   final String? password;
+  final String? deviceId;
 
-  LoginSettings({this.email,this.password,this.username});
+  LoginSettings({this.email,this.password,this.username,this.deviceId});
 }
 
 class DarkmodeSetting{

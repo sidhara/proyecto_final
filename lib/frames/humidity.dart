@@ -305,6 +305,8 @@ class _HumidityState extends State<Humidity> {
   final snackBarIrrigationSuccesful = const SnackBar(content: Text('Irrigation succesful!'));//muestra un mensaje en la pantalla del dispositivo
   final snackBarIrrigationFailed = const SnackBar(content: Text('Irrigation failed!'));
 
+  String deviceId="";
+
   irrigate() async {
 
     String server="nam1",
@@ -424,24 +426,30 @@ class _HumidityState extends State<Humidity> {
 
     if(response.body.isNotEmpty) {
       if (response.statusCode == 200){
-        List data=json.decode(response.body);//{payload: 91, id: 28, d1: 2021-10-14 19:54:44, username: example}
+        List data=json.decode(response.body);//{title: 91, id: 28, start: 2021-10-14 19:54:44, end: 2021-10-14 19:54:44, username: example, deviceid: ieurhgieurgiv, status: 1}
         if(data.isNotEmpty && data.length>=5){
           List<Text> values;
           for(dynamic dato in data){
             values=dato.toString().split(', ').map((String text) => Text(text)).toList();
 
             //Arreglo del formato del Datetime
-            List<Text> date=values[2].data!.substring(4).split(' ').map((String text) => Text(text)).toList();
+            List<Text> date=values[2].data!.substring(7).split(' ').map((String text) => Text(text)).toList();
             String fixedDate=date[0].data!+"T"+date[1].data!;
+
+            deviceId=values[5].data!.substring(10);
 
               humidityData.add(
                 HumidityData(
                   int.parse(values[1].data!.substring(4)), 
-                  double.parse(values[0].data!.substring(10)), 
+                  double.parse(values[0].data!.substring(8)), 
                   DateTime.parse(fixedDate)
                 )
               );
           }
+
+          PreferencesService settings=PreferencesService();
+          settings.saveDeviceId(deviceId);//guardado del deviceId en el sistema
+
           sort();//se ordena la serie de datos
 
           double avgHumidity=0;
